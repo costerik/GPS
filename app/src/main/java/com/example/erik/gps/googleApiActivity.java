@@ -1,5 +1,6 @@
 package com.example.erik.gps;
 
+import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 
 import android.location.Location;
@@ -8,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import com.google.android.gms.common.ConnectionResult;
@@ -16,6 +18,12 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -32,6 +40,7 @@ public class googleApiActivity extends AppCompatActivity implements
     protected Location mCurrentLocation;
     protected Button mStartUpdatesButton;
     protected Button mStopUpdatesButton;
+    protected Button mSavePosition;
     protected TextView mLastUpdateTimeTextView;
     protected TextView mLatitudeTextView;
     protected TextView mLongitudeTextView;
@@ -47,6 +56,7 @@ public class googleApiActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_google_api);
         mStartUpdatesButton = (Button) findViewById(R.id.buttonStart);
         mStopUpdatesButton = (Button) findViewById(R.id.buttonStop);
+        mSavePosition=(Button)findViewById(R.id.buttonGuardar);
         mLatitudeTextView = (TextView) findViewById(R.id.editTextLat);
         mLongitudeTextView = (TextView)findViewById(R.id.editTextLong);
         mLastUpdateTimeTextView = (TextView) findViewById(R.id.editTextDate);
@@ -68,6 +78,17 @@ public class googleApiActivity extends AppCompatActivity implements
 
         mRequestingLocationUpdates = false;
         mLastUpdateTime = "";
+        mSavePosition.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mCurrentLocation!=null) {
+                    guardarPosition(mCurrentLocation,"gps_2.txt");
+                }else{
+                    Toast.makeText(getApplicationContext(), "No se ha logrado establecer la conexión", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
 
 
         buildGoogleApiClient();
@@ -87,6 +108,11 @@ public class googleApiActivity extends AppCompatActivity implements
 
         if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
             startLocationUpdates();
+        }
+        try {
+            readFile("gps_2.txt");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -136,6 +162,42 @@ public class googleApiActivity extends AppCompatActivity implements
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.i(this.getClass().getSimpleName(), "Connection failed: ConnectionResult.getErrorCode() = " + connectionResult.getErrorCode());
+    }
+
+    private void guardarPosition(Location l,String fileName){
+        try
+        {
+            File file = getFileStreamPath(fileName);
+            String line=String.valueOf(l.getLatitude())+";"+String.valueOf(l.getLongitude())+";"+String.valueOf(l.getSpeed()*3600/1000)+";"+String.valueOf(mLastUpdateTime);
+            if(file.exists()){
+                Log.d("EXIST", "El archivo existe");
+                OutputStreamWriter fout= new OutputStreamWriter(openFileOutput(fileName, Context.MODE_APPEND));
+                fout.write(line+"\n");
+                fout.close();
+            }else {
+                Log.d("DIDN'T EXIST", "El archivo no existia");
+                OutputStreamWriter fout = new OutputStreamWriter(openFileOutput(fileName, Context.MODE_PRIVATE));
+                fout.write(line+"\n");
+                fout.close();
+            }
+        }catch (Exception ex){
+            Log.e("Ficheros", "Error al escribir fichero a memoria interna");
+        }
+    }
+
+    private void readFile(String fileName)throws IOException {
+        try {
+            InputStream isr = openFileInput(fileName);
+            BufferedReader br = new BufferedReader(new InputStreamReader(isr));
+            String line = br.readLine();
+            while (line != null) {
+                Log.i("PALABRA", line);
+                line = br.readLine();
+            }
+            br.close();
+        } catch (Exception ex) {
+            Log.e("Ficheros", "Error al leer fichero desde memoria interna");
+        }
     }
 
     private void updateUI() {

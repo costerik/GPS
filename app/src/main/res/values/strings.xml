@@ -8,6 +8,6 @@
     <string name="stop">Stop</string>
     <string name="title_activity_maps">Map</string>
     <string name="api">Api</string>
-    <string name="guardar">Guardar</string>
+    <string name="guardar">Save</string>
 
 </resources>
