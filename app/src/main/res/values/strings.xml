@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">GPS</string>
+    <string name="latitud">Latitud</string>
+    <string name="longitud">Longitud</string>
+    <string name="valor_latitud">Valor latitud</string>
+    <string name="valor_longitud">Valor longitud</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="api">Api</string>
+    <string name="guardar">Guardar</string>
+
+</resources>
